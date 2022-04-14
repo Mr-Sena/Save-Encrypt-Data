@@ -28,7 +28,7 @@ public class UsuarioController {
 
     }
 
-    @PostMapping
+    @PostMapping("/salvar")
     public ResponseEntity<UsuarioModel> salvar(@RequestBody UsuarioModel usuario) {
 
         usuario.setSenha(encoder.encode(usuario.getSenha()));
@@ -38,5 +38,23 @@ public class UsuarioController {
     }
 
     //Continuar com a validação de senha.
+
+    @GetMapping("/validarSenha")
+    public ResponseEntity<Boolean> validarSenha (@RequestParam String login,
+                                                 @RequestParam String password) {
+
+        Optional<UsuarioModel> optUsuario = repository.findByLogin(login);
+        if (optUsuario.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+        }
+
+        UsuarioModel usuario = optUsuario.get();
+        boolean valid = encoder.matches(password, usuario.getSenha());
+
+        HttpStatus status = (valid) ?HttpStatus.OK : HttpStatus.UNAUTHORIZED;
+
+        return ResponseEntity.status(status).body(valid);
+
+    }
 
 }
